@@ -1,6 +1,6 @@
 "use client";
 import { getCookie } from "cookies-next";
-import { createContext, useEffect, useReducer } from "react";
+import { createContext, useEffect, useReducer, useState } from "react";
 import { getApiCall } from "@/api/fatchData";
 
 export const AuthContex = createContext();
@@ -15,7 +15,8 @@ const authReducer = (state, action) => {
 };
 
 export default function AuthContexProvider({ children }) {
-  const token = getCookie("accesstoken");
+  const token = getCookie("usertoken");
+  const [loading, setLoading] = useState(false);
 
   const [state, dispatch] = useReducer(authReducer, {
     user: null,
@@ -37,7 +38,7 @@ export default function AuthContexProvider({ children }) {
   }, [token, state]);
 
   return (
-    <AuthContex.Provider value={{ state, dispatch }}>
+    <AuthContex.Provider value={{ state, dispatch, loading, setLoading }}>
       {children}
     </AuthContex.Provider>
   );

@@ -1,23 +1,30 @@
 "use client";
 import { getCookie } from "cookies-next";
-import { createContext, useEffect, allChateducer } from "react";
+import {
+  createContext,
+  useEffect,
+  allChateducer,
+  useReducer,
+  useState,
+} from "react";
 import { getApiCall } from "@/api/fatchData";
 
-export const AuthContex = createContext();
+export const ChatsContex = createContext();
 
-const authReducer = (chatState, action) => {
+const chatsReducer = (chatState, action) => {
   switch (action.type) {
-    case "ADD_AUTH_DATA":
+    case "ADD_CHATS_DATA":
       return { ...chatState, allChat: action.payload };
     default:
       return chatState;
   }
 };
 
-export default function AuthContexProvider({ children }) {
-  const token = getCookie("accesstoken");
+export default function ChatsContexProvider({ children }) {
+  const token = getCookie("usertoken");
+  const [loadingChats, setLoadingChats] = useState(false);
 
-  const [chatState, chatDispatch] = allChateducer(authReducer, {
+  const [chatState, chatDispatch] = useReducer(chatsReducer, {
     allChat: null,
   });
 
@@ -25,9 +32,9 @@ export default function AuthContexProvider({ children }) {
     if (token && !chatState?.allChat) {
       const fetchData = async () => {
         try {
-          const response = await getApiCall("auth/me");
+          const response = await getApiCall("message/getallsupports");
           if (response?.statusCode === 200 && response?.data) {
-            chatDispatch({ type: "ADD_AUTH_DATA", payload: response?.data });
+            chatDispatch({ type: "ADD_CHATS_DATA", payload: response?.data });
           }
         } catch (error) {}
       };
@@ -37,8 +44,10 @@ export default function AuthContexProvider({ children }) {
   }, [token, chatState]);
 
   return (
-    <AuthContex.Provider value={{ chatState, chatDispatch }}>
+    <ChatsContex.Provider
+      value={{ chatState, chatDispatch, loadingChats, setLoadingChats }}
+    >
       {children}
-    </AuthContex.Provider>
+    </ChatsContex.Provider>
   );
 }
